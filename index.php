@@ -1,19 +1,52 @@
 <?php
-
-use \Psr\Http\Message\ResponseInterface as Response;
 use \Psr\Http\Message\ServerRequestInterface as Request;
-
+use \Psr\Http\Message\ResponseInterface as Response;
 require './vendor/autoload.php';
-
 $app = new \Slim\App;
-
 /**
- * Inicio do bang :)
- * @var string
+ * Lista de todos os livros
  */
-$app->get('/', function (Request $request, Response $response) use ($app) {
-    $response->getBody()->write("Bebê de Microservice!");
-    return $response;
+$app->get('/books', function (Request $request, Response $response) use ($app) {
+    $return = $response->withJson(['msg' => 'Lista de Livros'], 200)
+        ->withHeader('Content-type', 'application/json');
+    return $return;
 });
-
+/**
+ * Retornando mais informações do livro informado pelo id
+ */
+$app->get('/books/{id}', function (Request $request, Response $response) use ($app) {
+    $route = $request->getAttribute('route');
+    $id = $route->getArgument('id');    
+    $return = $response->withJson(['msg' => "Exibindo o livro {$id}"], 200)
+        ->withHeader('Content-type', 'application/json');
+    return $return;
+});
+/**
+ * Cadastra um novo Livro
+ */
+$app->post('/books', function (Request $request, Response $response) use ($app) {
+    $return = $response->withJson(['msg' => "Cadastrando um livro"], 201)
+        ->withHeader('Content-type', 'application/json');
+    return $return;
+});
+/**
+ * Atualiza os dados de um livro
+ */
+$app->put('/books/{id}', function (Request $request, Response $response) use ($app) {
+    $route = $request->getAttribute('route');
+    $id = $route->getArgument('id');    
+    $return = $response->withJson(['msg' => "Modificando o livro {$id}"], 200)
+        ->withHeader('Content-type', 'application/json');
+    return $return;
+});
+/**
+ * Deleta o livro informado pelo ID
+ */
+$app->delete('/books/{id}', function (Request $request, Response $response) use ($app) {
+    $route = $request->getAttribute('route');
+    $id = $route->getArgument('id');    
+    $return = $response->withJson(['msg' => "Deletando o livro {$id}"], 204)
+        ->withHeader('Content-type', 'application/json');
+    return $return;
+});
 $app->run();
