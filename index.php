@@ -28,7 +28,16 @@ $app->get('/books/{id}', function (Request $request, Response $response) use ($a
     $id = $route->getArgument('id');
     $entityManager = $this->get('em');
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
-    $book = $booksRepository->find($id);        
+
+    $book = $booksRepository->find($id);
+
+/**
+ * Verifica se existe um livro com a ID informada
+ */
+    if (!$book) {
+        throw new \Exception("Book not Found", 404);
+    }
+
     $return = $response->withJson($book, 200)
         ->withHeader('Content-type', 'application/json');
     return $return;
@@ -49,7 +58,14 @@ $app->post('/books', function (Request $request, Response $response) use ($app) 
     /**
      * Instância da nossa Entidade preenchida com nossos parametros do post
      */
-    $book = (new Book())->setName($params->name)->setAuthor($params->author);
+    $book = (new Book())->setName($params->name ?? null)->setAuthor($params->author ?? null);
+
+    /**
+     * Verifica se existe um livro com a ID informada
+     */
+    if (!$book) {
+        throw new \Exception("Book not Found", 404);
+    }
 
     /**
      * Persiste a entidade no banco de dados
@@ -73,21 +89,29 @@ $app->put('/books/{id}', function (Request $request, Response $response) use ($a
     $id = $route->getArgument('id');
     /**
      * Encontra o Livro no Banco
-     */ 
+     */
     $entityManager = $this->get('em');
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
-    $book = $booksRepository->find($id);   
+    $book = $booksRepository->find($id);
+
+    /**
+     * Verifica se existe um livro com a ID informada
+     */
+    if (!$book) {
+        throw new \Exception("Book not Found", 404);
+    }
+
     /**
      * Atualiza e Persiste o Livro com os parâmetros recebidos no request
      */
     $book->setName($request->getParam('name'))
-         ->setAuthor($request->getParam('author'));
+        ->setAuthor($request->getParam('author'));
     /**
      * Persiste a entidade no banco de dados
      */
     $entityManager->persist($book);
-    $entityManager->flush();        
-    
+    $entityManager->flush();
+
     $return = $response->withJson($book, 200)
         ->withHeader('Content-type', 'application/json');
     return $return;
@@ -105,15 +129,15 @@ $app->delete('/books/{id}', function (Request $request, Response $response) use 
     $id = $route->getArgument('id');
     /**
      * Encontra o Livro no Banco
-     */ 
+     */
     $entityManager = $this->get('em');
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
-    $book = $booksRepository->find($id);   
+    $book = $booksRepository->find($id);
     /**
      * Remove a entidade
      */
     $entityManager->remove($book);
-    $entityManager->flush(); 
+    $entityManager->flush();
     $return = $response->withJson(['msg' => "Deletando o livro {$id}"], 204)
         ->withHeader('Content-type', 'application/json');
     return $return;
