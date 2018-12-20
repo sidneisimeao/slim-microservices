@@ -59,6 +59,7 @@ $app->post('/books', function (Request $request, Response $response) use ($app) 
      * Instância da nossa Entidade preenchida com nossos parametros do post
      */
     $book = (new Book())->setName($params->name ?? null)->setAuthor($params->author ?? null);
+    
 
     /**
      * Verifica se existe um livro com a ID informada
@@ -72,8 +73,15 @@ $app->post('/books', function (Request $request, Response $response) use ($app) 
      */
     $entityManager->persist($book);
     $entityManager->flush();
+
+    $logger = $this->get('logger');
+    $logger->info('Book Created!', $book->getValues());
+
     $return = $response->withJson($book, 201)
-        ->withHeader('Content-type', 'application/json');
+                       ->withHeader('Content-type', 'application/json');
+
+  
+
     return $return;
 });
 
