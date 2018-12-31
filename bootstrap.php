@@ -99,6 +99,16 @@ $entityManager = EntityManager::create($conn, $config);
  * Coloca o Entity manager dentro do container com o nome de em (Entity Manager)
  */
 $container['em'] = $entityManager;
+
+/**
+ * Token do nosso JWT
+ */
+$container['secretkey'] = "secretloko";
+
+
+/**
+ * Application Instance
+ */
 $app = new \Slim\App($container);
 
 /**
@@ -107,3 +117,38 @@ $app = new \Slim\App($container);
  * false - Remove a / no final da URL
  */
 $app->add(new TrailingSlash(false));
+
+/**
+ * Auth básica HTTP
+ */
+$app->add(new \Slim\Middleware\HttpBasicAuthentication([
+    /**
+     * Usuários existentes
+     */
+    "users" => [
+        "root" => "toor"
+    ],
+    /**
+     * Blacklist - Deixa todas liberadas e só protege as dentro do array
+     */
+    "path" => ["/auth"],
+    /**
+     * Whitelist - Protege todas as rotas e só libera as de dentro do array
+     */
+    //"passthrough" => ["/auth/liberada", "/admin/ping"],
+]));
+
+/**
+ * Auth básica do JWT
+ * Whitelist - Bloqueia tudo, e só libera os
+ * itens dentro do "passthrough"
+ */
+$app->add(new \Slim\Middleware\JwtAuthentication([
+    "regexp" => "/(.*)/", //Regex para encontrar o Token nos Headers - Livre
+    "header" => "X-Token", //O Header que vai conter o token
+    "path" => "/", //Vamos cobrir toda a API a partir do /
+    "passthrough" => ["/auth"], //Vamos adicionar a exceção de cobertura a rota /auth
+    "realm" => "Protected", 
+    "secret" => $container['secretkey'] //Nosso secretkey criado 
+]));
+
